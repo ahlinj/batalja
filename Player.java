@@ -46,7 +46,8 @@ public class Player {
 				getGameState();
 
 
-				float smallestSize = Float.MAX_VALUE; // Set to a large initial value
+				//finding the smallest neutral planet
+				float smallestSize = Float.MAX_VALUE;
 				HashMap<String, Object> smallestNeutralPlanet = null;
 
 				for(HashMap<String, Object> planet : neutralPlanets){
@@ -59,10 +60,6 @@ public class Player {
 
 				//get name of the smallest neutral planet
 				String planetNameSmallest = (String) smallestNeutralPlanet.get("name");
-
-
-
-
 
 
 
@@ -95,14 +92,41 @@ public class Player {
 						break;
 				}
 
-				//attacking the smallest neutral planet
+
+				//finding the nearest neutral planet
+				HashMap<String, Object> nearestNeutralPlanet = null;
+				int smallestDistance = Integer.MAX_VALUE;
+
+				for (HashMap<String, Object> myPlanet : myPlanets) {
+					int myPlanetX = (int) myPlanet.get("posX");
+					int myPlanetY = (int) myPlanet.get("posY");
+
+					for (HashMap<String, Object> neutralPlanet : neutralPlanets) {
+						int neutralPlanetX = (int) neutralPlanet.get("posX");
+						int neutralPlanetY = (int) neutralPlanet.get("posY");
+
+						//Euclidean distance
+						int distance = (int) Math.sqrt(Math.pow(neutralPlanetX - myPlanetX, 2) + Math.pow(neutralPlanetY - myPlanetY, 2));
+
+						if (distance < smallestDistance) {
+							smallestDistance = distance;
+							nearestNeutralPlanet = neutralPlanet;
+						}
+					}
+				}
+				//get name of the nearest neutral planet
+				String planetNameNearest = (String) nearestNeutralPlanet.get("name");
+
+
+
+				//attacking the nearest neutral planet
 				//will break once theres no neutral planets left
-				if(smallestSize > 0.0 && myPlanets.length > 0){
+				if(myPlanets.length > 0){
 					for (int i = 0 ; i < myPlanets.length ; i++) {
 						HashMap<String, Object> myPlanet = myPlanets[i];
-						String planetName = (String) myPlanet.get("name");
+						String myPlanetName = (String) myPlanet.get("name");
 
-						System.out.println("A " + planetName + " " + planetNameSmallest);
+						System.out.println("A " + myPlanetName + " " + planetNameNearest);
 					}
 				}
 
@@ -277,3 +301,4 @@ public class Player {
 		yellowFleets = yellowFleetsList.toArray(new String[0]);
 	}
 }
+
