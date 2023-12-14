@@ -1,9 +1,6 @@
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.LinkedList;
-import java.util.Random;
+import java.io.*;
+import java.util.*;
+
 
 public class Player {
 	static BufferedWriter fileOut = null;
@@ -15,11 +12,11 @@ public class Player {
 	public static int universeHeight;
 	public static String myColor;
 	
-	public static String[] bluePlanets;
-	public static String[] cyanPlanets;
-	public static String[] greenPlanets;
-	public static String[] yellowPlanets;
-	public static String[] neutralPlanets;
+	public static HashMap<String, Object>[] bluePlanets;
+	public static HashMap<String, Object>[] cyanPlanets;
+	public static HashMap<String, Object>[] greenPlanets;
+	public static HashMap<String, Object>[] yellowPlanets;
+	public static HashMap<String, Object>[] neutralPlanets;
 
 	public static String[] blueFleets;
 	public static String[] cyanFleets;
@@ -30,7 +27,6 @@ public class Player {
 	public static void main(String[] args) throws Exception {
 
 		try {
-			Random rand = new Random(); // source of random for random moves
 
 			/*
 				**************
@@ -49,89 +45,67 @@ public class Player {
 				*/
 				getGameState();
 
+
+				float smallestSize = Float.MAX_VALUE; // Set to a large initial value
+				HashMap<String, Object> smallestNeutralPlanet = null;
+
+				for(HashMap<String, Object> planet : neutralPlanets){
+					float planetSize = (float) planet.get("planetSize");
+					if (planetSize < smallestSize){
+						smallestSize = planetSize;
+						smallestNeutralPlanet = planet;
+					}
+				}
+
+				//get name of the smallest neutral planet
+				String planetNameSmallest = (String) smallestNeutralPlanet.get("name");
+
+
+
+
+
+
+
+
+
 				/*
 				 	*********************************
 					LOGIC: figure out what to do with
 					your turn
 					*********************************
-					- current plan: attack randomly
+					- current plan: attack smallest neutral planet
 				*/
 
-				String[] myPlanets = new String[0];
-				String targetPlayer = "";
-
-				/*
-					- get my planets based on my color
-					- select a random other color as the target player 
-				*/
-				if (myColor.equals("blue")) {
-					myPlanets = bluePlanets;
-					String[] potentialTargets = {"cyan", "green", "yellow", "neutral"};
-					targetPlayer = potentialTargets[rand.nextInt(4)];
-				} 
-
-				if (myColor.equals("cyan")) {
-					myPlanets = cyanPlanets;
-					String[] potentialTargets = {"blue", "green", "yellow", "neutral"};
-					targetPlayer = potentialTargets[rand.nextInt(4)];
-				} 
-
-				if (myColor.equals("green")) {
-					myPlanets = greenPlanets;
-					String[] potentialTargets = {"cyan", "blue", "yellow", "neutral"};
-					targetPlayer = potentialTargets[rand.nextInt(4)];
-				} 
-				
-				if (myColor.equals("yellow")) {
-					myPlanets = yellowPlanets;
-					String[] potentialTargets = {"cyan", "green", "blue", "neutral"};
-					targetPlayer = potentialTargets[rand.nextInt(4)];
+				HashMap<String, Object>[] myPlanets = new HashMap[0];
+				//defining myPlanets based on myColor
+				switch (myColor) {
+					case "blue":
+						myPlanets = bluePlanets;
+						break;
+					case "cyan":
+						myPlanets = cyanPlanets;
+						break;
+					case "green":
+						myPlanets = greenPlanets;
+						break;
+					case "yellow":
+						myPlanets = yellowPlanets;
+						break;
+					default:
+						break;
 				}
 
-				/*
-					- based on the color selected as the target,
-					find the planets of the targeted player
-				*/
-				String[] targetPlayerPlanets = new String[0];
-				if (targetPlayer.equals("blue")) {
-					targetPlayerPlanets = bluePlanets;
-				}
-
-				if (targetPlayer.equals("cyan")) {
-					targetPlayerPlanets = cyanPlanets;
-				}
-
-				if (targetPlayer.equals("green")) {
-					targetPlayerPlanets = greenPlanets;
-				}
-
-				if (targetPlayer.equals("yellow")) {
-					targetPlayerPlanets = yellowPlanets;
-				}
-
-				if (targetPlayer.equals("neutral")) {
-					targetPlayerPlanets = neutralPlanets;
-				}
-				/*
-					- if the target player has any planets
-					and if i have any planets (we could only have 
-					fleets) attack a random planet of the target 
-					from each of my planets
-				*/
-				if (targetPlayerPlanets.length > 0 && myPlanets.length > 0) {
+				//attacking the smallest neutral planet
+				//will break once theres no neutral planets left
+				if(smallestSize > 0.0 && myPlanets.length > 0){
 					for (int i = 0 ; i < myPlanets.length ; i++) {
-						String myPlanet = myPlanets[i];
-						int randomEnemyIndex = rand.nextInt(targetPlayerPlanets.length);
-						String randomTargetPlanet = targetPlayerPlanets[randomEnemyIndex];
-						/*
-							- printing the attack will tell the game to attack
-							- be carefull to only use System.out.println for printing game commands
-							- for debugging you can use logToFile() method
-						*/
-						System.out.println("A " + myPlanet + " " + randomTargetPlanet);
+						HashMap<String, Object> myPlanet = myPlanets[i];
+						String planetName = (String) myPlanet.get("name");
+
+						System.out.println("A " + planetName + " " + planetNameSmallest);
 					}
 				}
-				
+
 				/*
 					- send a hello message to your teammate bot :)
 					- it will recieve it form the game next turn (if the bot parses it)
@@ -196,12 +170,12 @@ public class Player {
 			- this is where we will store the data recieved from the game,
 			- Since we don't know how many planets/fleets each player will 
 			have, we are using lists.
-		*/ 
-		LinkedList<String> bluePlanetsList = new LinkedList<>();
-		LinkedList<String> cyanPlanetsList = new LinkedList<>();
-		LinkedList<String> greenPlanetsList = new LinkedList<>();
-		LinkedList<String> yellowPlanetsList = new LinkedList<>();
-		LinkedList<String> neutralPlanetsList = new LinkedList<>();
+		*/
+		LinkedList<HashMap<String, Object>> bluePlanetsList = new LinkedList<>();
+		LinkedList<HashMap<String, Object>> cyanPlanetsList = new LinkedList<>();
+		LinkedList<HashMap<String, Object>> greenPlanetsList = new LinkedList<>();
+		LinkedList<HashMap<String, Object>> yellowPlanetsList = new LinkedList<>();
+		LinkedList<HashMap<String, Object>> neutralPlanetsList = new LinkedList<>();
 
 		LinkedList<String> blueFleetsList = new LinkedList<>();
 		LinkedList<String> cyanFleetsList = new LinkedList<>();
@@ -229,7 +203,7 @@ public class Player {
 		while (!(line = stdin.readLine()).equals("S")) {
 			/* 
 				- save the data we recieve to the log file, so you can see what 
-				data is recieved form the game (for debugging)
+				data is recieved from the game (for debugging)
 			*/ 
 			logToFile(line); 
 			
@@ -249,34 +223,54 @@ public class Player {
 				- Planet: Name (number), position x, position y, 
 				planet size, army size, planet color (blue, cyan, green, yellow or null for neutral)
 			*/
+
 			if (firstLetter == 'P') {
-				String plantetName = tokens[1];
-				if (tokens[6].equals("blue")) {
-					bluePlanetsList.add(plantetName);
-				} 
-				if (tokens[6].equals("cyan")) {
-					cyanPlanetsList.add(plantetName);
-				} 
-				if (tokens[6].equals("green")) {
-					greenPlanetsList.add(plantetName);
-				} 
-				if (tokens[6].equals("yellow")) {
-					yellowPlanetsList.add(plantetName);
-				} 
-				if (tokens[6].equals("null")) {
-					neutralPlanetsList.add(plantetName);
-				} 
-			} 
+				String planetName = tokens[1];
+				int posX = Integer.parseInt(tokens[2]);
+				int posY = Integer.parseInt(tokens[3]);
+				float planetSize = Float.parseFloat(tokens[4]);
+				int armySize = Integer.parseInt(tokens[5]);
+				String planetColor = tokens[6];
+
+				//Create a HashMap to store planet information
+				Map<String, Object> planetInfo = new HashMap<>();
+				planetInfo.put("name", planetName);
+				planetInfo.put("posX", posX);
+				planetInfo.put("posY", posY);
+				planetInfo.put("planetSize", planetSize);
+				planetInfo.put("armySize", armySize);
+				planetInfo.put("planetColor", planetColor);
+
+				//Depending on the color, add the planet to the corresponding list
+				switch (planetColor) {
+					case "blue":
+						bluePlanetsList.add((HashMap<String, Object>) planetInfo);
+						break;
+					case "cyan":
+						cyanPlanetsList.add((HashMap<String, Object>) planetInfo);
+						break;
+					case "green":
+						greenPlanetsList.add((HashMap<String, Object>) planetInfo);
+						break;
+					case "yellow":
+						yellowPlanetsList.add((HashMap<String, Object>) planetInfo);
+						break;
+					case "null":
+						neutralPlanetsList.add((HashMap<String, Object>) planetInfo);
+						break;
+				}
+			}
+
 		}
 		/*
 			- override data from previous turn
 			- convert the lists into fixed size arrays
-		*/ 
-		bluePlanets = bluePlanetsList.toArray(new String[0]);
-		cyanPlanets = cyanPlanetsList.toArray(new String[0]);
-		greenPlanets = greenPlanetsList.toArray(new String[0]);
-		yellowPlanets = yellowPlanetsList.toArray(new String[0]);
-		neutralPlanets = neutralPlanetsList.toArray(new String[0]);
+		*/
+		bluePlanets = bluePlanetsList.toArray(new HashMap[0]);
+		cyanPlanets = cyanPlanetsList.toArray(new HashMap[0]);
+		greenPlanets = greenPlanetsList.toArray(new HashMap[0]);
+		yellowPlanets = yellowPlanetsList.toArray(new HashMap[0]);
+		neutralPlanets = neutralPlanetsList.toArray(new HashMap[0]);
 		blueFleets = blueFleetsList.toArray(new String[0]);
 		cyanFleets = cyanFleetsList.toArray(new String[0]);
 		greenFleets = greenFleetsList.toArray(new String[0]);
